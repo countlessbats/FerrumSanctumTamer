@@ -24,35 +24,39 @@ The Ferrum Sanctum blueprint GUID filtered by the mod is:
 
 ## Install
 
-### Unity Mod Manager
+Rogue Trader includes the Unity Mod Manager loader used by this mod. You do
+not need to download the standalone Unity Mod Manager installer.
 
-1. Install Unity Mod Manager for Warhammer 40,000: Rogue Trader.
+1. Launch Rogue Trader at least once, then close the game.
 2. Download `FerrumSanctumTamer-1.0.0.zip`.
-3. Open Unity Mod Manager.
-4. Go to the Mods tab.
-5. Drag the zip into the Mods tab, or use Install Mod and select the zip.
-6. Start the game.
-7. Open the Unity Mod Manager overlay in-game with `Ctrl+F10`.
-8. Configure Ferrum Sanctum Tamer from the mod settings panel.
-
-### Manual Install
-
-Create this folder if it does not already exist:
+3. Open this folder, creating it if needed:
 
 ```text
 %USERPROFILE%\AppData\LocalLow\Owlcat Games\Warhammer 40000 Rogue Trader\UnityModManager\FerrumSanctumTamer
 ```
 
-Copy these files into it:
+4. Extract the contents of `FerrumSanctumTamer-1.0.0.zip` directly into that
+   `FerrumSanctumTamer` folder.
+5. After extraction, the folder should look like this:
 
 ```text
-FerrumSanctumTamer.dll
-Info.json
-README.md
-LICENSE
+UnityModManager
+└── FerrumSanctumTamer
+    ├── FerrumSanctumTamer.dll
+    ├── Info.json
+    ├── README.md
+    └── LICENSE
 ```
 
-Restart the game after replacing the DLL.
+There should not be an extra nested folder such as
+`FerrumSanctumTamer\FerrumSanctumTamer\Info.json`.
+
+6. Start the game.
+7. Open the Unity Mod Manager overlay in-game with `Ctrl+F10`.
+8. Configure Ferrum Sanctum Tamer from the mod settings panel.
+
+When updating, close the game first, replace the files in the same folder, and
+then start the game again.
 
 ## Build From Source
 
