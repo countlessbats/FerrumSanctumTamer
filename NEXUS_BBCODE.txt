@@ -1,0 +1,73 @@
+[b]Ferrum Sanctum Tamer[/b]
+
+Tiny Unity Mod Manager mod for Warhammer 40,000: Rogue Trader that tames the Ferrum Sanctum overhead icon and, optionally, its mechanical shock-damage penalty.
+
+[b]Features[/b]
+[list]
+[*]Hides only the Ferrum Sanctum buff/debuff icon above characters' heads.
+[*]Does not suppress other overhead buffs or debuffs.
+[*]Optional mechanical modes:
+[list]
+[*]Vanilla: 15% shock damage increase per stack
+[*]Reduced: 10% per stack
+[*]Reduced: 5% per stack
+[*]Disabled: 0% per stack
+[/list]
+[*]In 0% mode, blocks new Ferrum Sanctum applications and strips existing Ferrum Sanctum buffs from loaded characters.
+[*]Restores Ferrum Sanctum buffs removed or blocked by the mod when switching back from 0%.
+[*]Updates the Ferrum Sanctum tooltip so it shows the current selected percentage.
+[/list]
+
+[b]Install[/b]
+[list=1]
+[*]Install Unity Mod Manager for Warhammer 40,000: Rogue Trader.
+[*]Download [b]FerrumSanctumTamer-1.0.0.zip[/b].
+[*]Open Unity Mod Manager.
+[*]Go to the Mods tab.
+[*]Drag the zip into the Mods tab, or click Install Mod and select the zip.
+[*]Start the game.
+[*]Open the Unity Mod Manager overlay in-game with [b]Ctrl+F10[/b].
+[*]Configure Ferrum Sanctum Tamer from the mod settings panel.
+[/list]
+
+[b]Manual Install[/b]
+
+Create this folder if needed:
+
+[code]%USERPROFILE%\AppData\LocalLow\Owlcat Games\Warhammer 40000 Rogue Trader\UnityModManager\FerrumSanctumTamer[/code]
+
+Copy these files into it:
+
+[code]FerrumSanctumTamer.dll
+Info.json
+README.md
+LICENSE[/code]
+
+Restart the game after replacing the DLL.
+
+[b]Compatibility[/b]
+[list]
+[*]Requires Unity Mod Manager.
+[*]Built for Warhammer 40,000: Rogue Trader.
+[*]Only targets the Ferrum Sanctum blueprint GUID [code]780497b04a0944e59cb57e68bb9775c4[/code].
+[/list]
+
+[b]Source / Audit[/b]
+
+This mod is open source under the MIT License:
+
+[url=https://github.com/countlessbats/FerrumSanctumTamer]https://github.com/countlessbats/FerrumSanctumTamer[/url]
+
+The repository includes build instructions and a PowerShell build script. The source is a single C# file and can be compiled locally against your Rogue Trader install and Unity Mod Manager DLL.
+
+Audit notes:
+[list]
+[*]No network access.
+[*]No arbitrary file read/write behavior.
+[*]Persistent settings are handled through Unity Mod Manager.
+[*]Harmony patch targets are documented in the README.
+[/list]
+
+[b]License[/b]
+
+MIT License.

@@ -1,0 +1,11 @@
+{
+  "Id": "FerrumSanctumTamer",
+  "DisplayName": "Ferrum Sanctum Tamer",
+  "Author": "Loom",
+  "Version": "1.0.0",
+  "ManagerVersion": "0.23.0",
+  "Requirements": [],
+  "AssemblyName": "FerrumSanctumTamer.dll",
+  "EntryMethod": "FerrumSanctumTamer.Main.Load",
+  "HomePage": "https://github.com/countlessbats/FerrumSanctumTamer"
+}
