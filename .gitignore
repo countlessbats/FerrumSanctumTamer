@@ -1,0 +1,10 @@
+bin/
+dist/
+release/
+*.dll
+*.zip
+*.pdb
+*.cache*
+.vs/
+.idea/
+*.user
