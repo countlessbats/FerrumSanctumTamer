@@ -7,10 +7,11 @@ Unity Mod Manager mod for **Warhammer 40,000: Rogue Trader**.
 - Hides only the Ferrum Sanctum buff/debuff icon from unit overhead UI.
 - Leaves all other overhead buffs and debuffs untouched.
 - Optional mechanical settings:
-  - Vanilla: 15% shock damage increase per stack
-  - Reduced: 10% per stack
-  - Reduced: 5% per stack
+  - Vanilla: use the game's normal value
+  - Cap at 10% per stack
+  - Cap at 5% per stack
   - Disabled: 0% per stack, block new Ferrum Sanctum applications, and strip existing Ferrum Sanctum buffs from loaded characters
+- The 10% and 5% modes are caps, not forced values. If the game or a talent lowers Ferrum Sanctum below the selected cap, the lower game value is preserved.
 - Restores Ferrum Sanctum buffs removed or blocked by the mod when switching back from 0%.
 - Updates the Ferrum Sanctum tooltip at render time so it shows the selected per-stack value.
 
@@ -28,14 +29,14 @@ Rogue Trader includes the Unity Mod Manager loader used by this mod. You do
 not need to download the standalone Unity Mod Manager installer.
 
 1. Launch Rogue Trader at least once, then close the game.
-2. Download `FerrumSanctumTamer-1.0.0.zip`.
+2. Download `FerrumSanctumTamer-1.0.1.zip`.
 3. Open this folder, creating it if needed:
 
 ```text
 %USERPROFILE%\AppData\LocalLow\Owlcat Games\Warhammer 40000 Rogue Trader\UnityModManager\FerrumSanctumTamer
 ```
 
-4. Extract the contents of `FerrumSanctumTamer-1.0.0.zip` directly into that
+4. Extract the contents of `FerrumSanctumTamer-1.0.1.zip` directly into that
    `FerrumSanctumTamer` folder.
 5. After extraction, the folder should look like this:
 
@@ -79,7 +80,7 @@ The script:
 2. Locates `UnityModManager.dll` in the default Rogue Trader Unity Mod Manager folder unless `-UnityModManagerDll` is supplied.
 3. Compiles `Source\FerrumSanctumTamer.cs` with Roslyn `csc`.
 4. Writes the DLL to `bin\FerrumSanctumTamer.dll`.
-5. Creates a release zip in `dist\FerrumSanctumTamer-1.0.0.zip`.
+5. Creates a release zip in `dist\FerrumSanctumTamer-1.0.1.zip`.
 
 Example with an explicit Unity Mod Manager DLL:
 
@@ -106,7 +107,7 @@ Primary Harmony patch targets:
 - `UnitBuffPartVM.UpdateData`: refresh reversible overhead hiding.
 - `TooltipTemplateBuff.Prepare`: update Ferrum Sanctum tooltip percentage.
 - `BuffCollection.Add`: block Ferrum Sanctum application only in 0% mode.
-- `WarhammerDamageModifier.TryApply`: adjust Ferrum Sanctum's mechanical damage percentage.
+- `WarhammerDamageModifier.TryApply`: cap Ferrum Sanctum's mechanical damage percentage without overriding lower native game values.
 
 ## License
 

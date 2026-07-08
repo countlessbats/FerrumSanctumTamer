@@ -78,9 +78,9 @@ public static class Main
 
         GUILayout.Space(8f);
         GUILayout.Label("Ferrum Sanctum mechanical value");
-        DrawModeButton("Vanilla: 15% per stack", FerrumMode.Vanilla15);
-        DrawModeButton("Reduced: 10% per stack", FerrumMode.Reduce10);
-        DrawModeButton("Reduced: 5% per stack", FerrumMode.Reduce5);
+        DrawModeButton("Vanilla: use the game's normal value", FerrumMode.Vanilla15);
+        DrawModeButton("Cap at 10% per stack", FerrumMode.Reduce10);
+        DrawModeButton("Cap at 5% per stack", FerrumMode.Reduce5);
         DrawModeButton("Disabled: 0%, and block new Ferrum Sanctum applications", FerrumMode.Disable0);
 
         GUILayout.Space(8f);
@@ -353,18 +353,13 @@ public static class Main
         return removed;
     }
 
-    internal static int MechanicalPercentPerStack
+    internal static int? MechanicalPercentCapPerStack
     {
         get
         {
-            if (!Enabled)
-            {
-                return 15;
-            }
-
             if (!IsPatchActive)
             {
-                return 15;
+                return null;
             }
 
             switch (Settings.Mode)
@@ -376,7 +371,7 @@ public static class Main
                 case FerrumMode.Disable0:
                     return 0;
                 default:
-                    return 15;
+                    return null;
             }
         }
     }
@@ -388,11 +383,20 @@ public static class Main
             return description;
         }
 
-        string percent = MechanicalPercentPerStack.ToString();
+        int? percent = MechanicalPercentCapPerStack;
+        if (!percent.HasValue)
+        {
+            return description;
+        }
+
+        string replacement = Settings.Mode == FerrumMode.Disable0
+            ? "+0% more"
+            : "up to +" + percent.Value + "% more";
+
         return description
-            .Replace("+15% more", "+" + percent + "% more")
-            .Replace("+15 % more", "+" + percent + "% more")
-            .Replace("+15\u00a0% more", "+" + percent + "% more");
+            .Replace("+15% more", replacement)
+            .Replace("+15 % more", replacement)
+            .Replace("+15\u00a0% more", replacement);
     }
 
     internal static void UpdateFerrumTooltipDescription(TooltipTemplateBuff tooltip)
@@ -529,8 +533,13 @@ internal static class WarhammerDamageModifier_TryApply_Patch
             return true;
         }
 
-        int percent = Main.MechanicalPercentPerStack;
-        if (percent <= 0)
+        int? percentCap = Main.MechanicalPercentCapPerStack;
+        if (!percentCap.HasValue)
+        {
+            return true;
+        }
+
+        if (percentCap.Value <= 0)
         {
             return false;
         }
@@ -541,8 +550,13 @@ internal static class WarhammerDamageModifier_TryApply_Patch
             return true;
         }
 
+        if (modifier.Value <= percentCap.Value)
+        {
+            return true;
+        }
+
         OriginalValues[__instance] = modifier.Value;
-        modifier.Value = percent;
+        modifier.Value = percentCap.Value;
         return true;
     }
 
