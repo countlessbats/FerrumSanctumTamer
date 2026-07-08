@@ -8,11 +8,12 @@ Tiny Unity Mod Manager mod for Warhammer 40,000: Rogue Trader that tames the Fer
 [*]Does not suppress other overhead buffs or debuffs.
 [*]Optional mechanical modes:
 [list]
-[*]Vanilla: 15% shock damage increase per stack
-[*]Reduced: 10% per stack
-[*]Reduced: 5% per stack
+[*]Vanilla: use the game's normal value
+[*]Cap at 10% per stack
+[*]Cap at 5% per stack
 [*]Disabled: 0% per stack
 [/list]
+[*]The 10% and 5% modes are caps, not forced values. If the game or a talent lowers Ferrum Sanctum below the selected cap, the lower game value is preserved.
 [*]In 0% mode, blocks new Ferrum Sanctum applications and strips existing Ferrum Sanctum buffs from loaded characters.
 [*]Restores Ferrum Sanctum buffs removed or blocked by the mod when switching back from 0%.
 [*]Updates the Ferrum Sanctum tooltip so it shows the current selected percentage.
@@ -24,10 +25,10 @@ Rogue Trader includes the Unity Mod Manager loader used by this mod. You do not 
 
 [list=1]
 [*]Launch Rogue Trader at least once, then close the game.
-[*]Download [b]FerrumSanctumTamer-1.0.0.zip[/b].
+[*]Download [b]FerrumSanctumTamer-1.0.1.zip[/b].
 [*]Open this folder, creating it if needed:
 [code]%USERPROFILE%\AppData\LocalLow\Owlcat Games\Warhammer 40000 Rogue Trader\UnityModManager\FerrumSanctumTamer[/code]
-[*]Extract the contents of [b]FerrumSanctumTamer-1.0.0.zip[/b] directly into that [b]FerrumSanctumTamer[/b] folder.
+[*]Extract the contents of [b]FerrumSanctumTamer-1.0.1.zip[/b] directly into that [b]FerrumSanctumTamer[/b] folder.
 [*]After extraction, the folder should contain these files directly:
 [code]FerrumSanctumTamer.dll
 Info.json
