@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -40,7 +41,7 @@ public static class Main
     public static bool Load(UnityModManager.ModEntry modEntry)
     {
         ModEntry = modEntry;
-        Settings = UnityModManager.ModSettings.Load<Settings>(modEntry);
+        Settings = LoadSettingsSafely(modEntry);
 
         s_Harmony = new Harmony(ModId);
         s_Harmony.PatchAll(Assembly.GetExecutingAssembly());
@@ -53,6 +54,46 @@ public static class Main
 
         modEntry.Logger.Log("Loaded.");
         return true;
+    }
+
+    private static Settings LoadSettingsSafely(UnityModManager.ModEntry modEntry)
+    {
+        string settingsPath = Path.Combine(modEntry.Path, "Settings.xml");
+        try
+        {
+            if (File.Exists(settingsPath))
+            {
+                FileInfo settingsFile = new FileInfo(settingsPath);
+                if (settingsFile.Length == 0)
+                {
+                    File.Delete(settingsPath);
+                    modEntry.Logger.Log("Deleted empty Settings.xml; using default settings.");
+                }
+                else
+                {
+                    string settingsText = File.ReadAllText(settingsPath).TrimStart();
+                    if (!settingsText.StartsWith("<", StringComparison.Ordinal))
+                    {
+                        throw new InvalidDataException("Settings.xml is not XML.");
+                    }
+                }
+            }
+
+            return UnityModManager.ModSettings.Load<Settings>(modEntry);
+        }
+        catch (Exception ex)
+        {
+            modEntry.Logger.LogException("Settings.xml could not be read; using default settings.", ex);
+            try
+            {
+                File.Move(settingsPath, settingsPath + ".bad-" + DateTime.Now.ToString("yyyyMMddHHmmss"));
+            }
+            catch
+            {
+            }
+
+            return new Settings();
+        }
     }
 
     private static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
@@ -70,6 +111,7 @@ public static class Main
     {
         bool oldHide = Settings.HideOverheadIcon;
         FerrumMode oldMode = Settings.Mode;
+        TalentFerrumMode oldTalentMode = Settings.TalentMode;
 
         GUILayout.Label("Overhead display");
         Settings.HideOverheadIcon = GUILayout.Toggle(
@@ -84,9 +126,15 @@ public static class Main
         DrawModeButton("Disabled: 0%, and block new Ferrum Sanctum applications", FerrumMode.Disable0);
 
         GUILayout.Space(8f);
+        GUILayout.Label("Talent-reduced Ferrum Sanctum value");
+        DrawTalentModeButton("Vanilla talent value: 10% per stack", TalentFerrumMode.Vanilla10);
+        DrawTalentModeButton("Reduce talent value to 5% per stack", TalentFerrumMode.Reduce5);
+        DrawTalentModeButton("Disable talent-reduced Ferrum Sanctum damage: 0%", TalentFerrumMode.Disable0);
+
+        GUILayout.Space(8f);
         GUILayout.Label("Changing this setting should immediately affect gameplay.");
 
-        if (oldHide != Settings.HideOverheadIcon || oldMode != Settings.Mode)
+        if (oldHide != Settings.HideOverheadIcon || oldMode != Settings.Mode || oldTalentMode != Settings.TalentMode)
         {
             if (oldMode == FerrumMode.Disable0 && Settings.Mode != FerrumMode.Disable0)
             {
@@ -119,6 +167,16 @@ public static class Main
         if (next && !selected)
         {
             Settings.Mode = mode;
+        }
+    }
+
+    private static void DrawTalentModeButton(string label, TalentFerrumMode mode)
+    {
+        bool selected = Settings.TalentMode == mode;
+        bool next = GUILayout.Toggle(selected, label);
+        if (next && !selected)
+        {
+            Settings.TalentMode = mode;
         }
     }
 
@@ -376,6 +434,27 @@ public static class Main
         }
     }
 
+    internal static int? TalentPercentCapPerStack
+    {
+        get
+        {
+            if (!IsPatchActive)
+            {
+                return null;
+            }
+
+            switch (Settings.TalentMode)
+            {
+                case TalentFerrumMode.Reduce5:
+                    return 5;
+                case TalentFerrumMode.Disable0:
+                    return 0;
+                default:
+                    return null;
+            }
+        }
+    }
+
     internal static string UpdateFerrumDescriptionPercent(string description)
     {
         if (string.IsNullOrEmpty(description))
@@ -386,7 +465,20 @@ public static class Main
         int? percent = MechanicalPercentCapPerStack;
         if (!percent.HasValue)
         {
-            return description;
+            int? talentPercent = TalentPercentCapPerStack;
+            if (!talentPercent.HasValue)
+            {
+                return description;
+            }
+
+            string talentReplacement = talentPercent.Value <= 0
+                ? "+15% more (+0% if reduced by talent)"
+                : "+15% more (up to +" + talentPercent.Value + "% if reduced by talent)";
+
+            return description
+                .Replace("+15% more", talentReplacement)
+                .Replace("+15 % more", talentReplacement)
+                .Replace("+15\u00a0% more", talentReplacement);
         }
 
         string replacement = Settings.Mode == FerrumMode.Disable0
@@ -452,10 +544,18 @@ public enum FerrumMode
     Disable0
 }
 
+public enum TalentFerrumMode
+{
+    Vanilla10,
+    Reduce5,
+    Disable0
+}
+
 public class Settings : UnityModManager.ModSettings
 {
     public bool HideOverheadIcon = true;
     public FerrumMode Mode = FerrumMode.Vanilla15;
+    public TalentFerrumMode TalentMode = TalentFerrumMode.Vanilla10;
 }
 
 [HarmonyPatch(typeof(OvertipEntityUnitVM), MethodType.Constructor, new[] { typeof(AbstractUnitEntity) })]
@@ -533,30 +633,43 @@ internal static class WarhammerDamageModifier_TryApply_Patch
             return true;
         }
 
-        int? percentCap = Main.MechanicalPercentCapPerStack;
-        if (!percentCap.HasValue)
-        {
-            return true;
-        }
-
-        if (percentCap.Value <= 0)
-        {
-            return false;
-        }
-
         ContextValueModifier modifier = __instance.PercentDamageModifier;
         if (modifier == null || !modifier.Enabled)
         {
             return true;
         }
 
-        if (modifier.Value <= percentCap.Value)
+        int targetValue = modifier.Value;
+
+        int? talentCap = Main.TalentPercentCapPerStack;
+        if (talentCap.HasValue && targetValue <= 10)
+        {
+            if (talentCap.Value <= 0)
+            {
+                return false;
+            }
+
+            targetValue = Math.Min(targetValue, talentCap.Value);
+        }
+
+        int? percentCap = Main.MechanicalPercentCapPerStack;
+        if (percentCap.HasValue)
+        {
+            if (percentCap.Value <= 0)
+            {
+                return false;
+            }
+
+            targetValue = Math.Min(targetValue, percentCap.Value);
+        }
+
+        if (modifier.Value <= targetValue)
         {
             return true;
         }
 
         OriginalValues[__instance] = modifier.Value;
-        modifier.Value = percentCap.Value;
+        modifier.Value = targetValue;
         return true;
     }
 
